@@ -1,0 +1,145 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.tf'
+      - '.github/workflows/terraform.yml'
+      - 'terraform.tfvars'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.tf'
+      - '.github/workflows/terraform.yml'
+      - 'terraform.tfvars'
+
+env:
+  AWS_REGION: ap-south-1
+  TERRAFORM_VERSION: 1.5.0
+
+jobs:
+  # Stage 1: Validation and Formatting
+  validate:
+    name: Terraform Validate & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init (for validation)
+        run: terraform init -backend=false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+      - name: Terraform Validate
+        run: terraform validate
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+  # Stage 2: Plan
+  plan:
+    name: Terraform Plan
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          TF_VAR_environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: tfplan
+          path: tfplan
+          retention-days: 5
+
+      - name: Comment PR with Plan
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = 'Plan created successfully. Review before merge.';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Terraform Plan\n\n${plan}`
+            });
+
+  # Stage 3: Apply (only on main branch)
+  apply:
+    name: Terraform Apply
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          TF_VAR_environment: prod
+
+      - name: Terraform Output
+        run: terraform output
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+  # Stage 4: Cleanup (optional, runs on failure)
+  cleanup:
+    name: Cleanup on Failure
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name == 'pull_request'
+    steps:
+      - name: Notify Cleanup
+        run: echo "Workflow failed. Review logs for details."
