@@ -1,0 +1,12 @@
+# Default behavior: automatically normalize line endings for text files
+* text=auto
+
+# Enforce LF (Unix) line endings for Terraform, config, and script files
+*.tf text eol=lf
+*.tfvars text eol=lf
+*.hcl text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf

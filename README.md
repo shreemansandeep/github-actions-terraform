@@ -7,8 +7,8 @@ Automated Terraform deployment pipeline using GitHub Actions with AWS provider c
 - AWS Account with programmatic access
 - GitHub Repository
 - GitHub Secrets configured:
-  - `AWS_ACCESS_KEY`: AWS access key ID
-  - `AWS_SECRET_KEY`: AWS secret access key
+  - `AWS_ACCESS_KEY_ID`: AWS access key ID
+  - `AWS_SECRET_ACCESS_KEY`: AWS secret access key
 
 ## 🔧 Setup Instructions
 
@@ -22,8 +22,8 @@ Settings → Secrets and variables → Actions → New repository secret
 
 | Secret Name | Value |
 |---|---|
-| `AWS_ACCESS_KEY` | Your AWS Access Key ID |
-| `AWS_SECRET_KEY` | Your AWS Secret Access Key |
+| `AWS_ACCESS_KEY_ID` | Your AWS Access Key ID |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS Secret Access Key |
 
 ### 2. Project Structure
 
@@ -132,7 +132,7 @@ validate
 
 ### AWS Credentials Not Found
 - Verify secrets are added to repository settings
-- Check secret names match exactly: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`
+- Check secret names match exactly: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 
 ### Terraform Validation Fails
 - Run `terraform validate` locally
