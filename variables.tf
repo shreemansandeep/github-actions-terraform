@@ -22,15 +22,4 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "state_bucket_name" {
-  description = "The name of the S3 bucket for storing Terraform state (must be globally unique)"
-  type        = string
-  default     = "sandheep-terraform-state-bucket" # Change this to a unique bucket name
-}
-
-variable "dynamodb_table_name" {
-  description = "The name of the DynamoDB table for Terraform state locking"
-  type        = string
-  default     = "terraform-locks"
-}
 
