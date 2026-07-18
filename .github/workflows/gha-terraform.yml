@@ -57,7 +57,7 @@ jobs:
     name: Terraform Plan
     needs: validate
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -104,7 +104,7 @@ jobs:
   # Stage 3: Apply (only on main branch)
   apply:
     name: Terraform Apply
-    needs: validate
+    needs: plan
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
@@ -122,12 +122,17 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v3
+        with:
+          name: tfplan
+          path: .
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply tfplan
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          TF_VAR_environment: prod
 
       - name: Terraform Output
         run: terraform output
