@@ -22,3 +22,27 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "db_name" {
+  description = "Name of the RDS database to create"
+  type        = string
+  default     = "mydb"
+}
+
+variable "db_username" {
+  description = "Master username for the RDS database"
+  type        = string
+  default     = "dbadmin"
+}
+
+variable "db_instance_class" {
+  description = "The instance type of the RDS database"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_allocated_storage" {
+  description = "The allocated storage in gigabytes"
+  type        = number
+  default     = 20
+}
+

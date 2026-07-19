@@ -9,3 +9,9 @@ ami_id = "ami-01a00762f46d584a1"
 
 # EC2 instance type
 instance_type = "t3.micro"
+
+# RDS Database Configuration
+db_name              = "mydb"
+db_username          = "dbadmin"
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
