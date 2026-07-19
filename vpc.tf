@@ -139,37 +139,3 @@ resource "aws_route_table_association" "database" {
   route_table_id = aws_route_table.database.id
 }
 
-# Security Group for the web instances in this VPC
-resource "aws_security_group" "web_sg" {
-  name        = "${var.environment}-web-sg"
-  description = "Security group allowing inbound HTTP and SSH traffic"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "Allow HTTP inbound"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Allow SSH inbound"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.environment}-web-sg"
-  }
-}
