@@ -23,9 +23,10 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# Ignore plan files
+# Ignore plan files and generated zips
 *.tfplan
 tfplan
+*.zip
 
 # Ignore lock files (optional - some teams commit these)
 # .terraform.lock.hcl

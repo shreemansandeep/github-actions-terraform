@@ -23,7 +23,22 @@ env:
   TERRAFORM_VERSION: 1.14.8
 
 jobs:
-  # Stage 1: Validation and Formatting
+  # Stage 1: Security Scanning (Gitleaks)
+  gitleaks:
+    name: Security Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Stage 2: Validation and Formatting
   validate:
     name: Terraform Validate & Format
     runs-on: ubuntu-latest
@@ -52,10 +67,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  # Stage 2: Plan
+  # Stage 3: Plan
   plan:
     name: Terraform Plan
-    needs: validate
+    needs: [gitleaks, validate]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     steps:
