@@ -14,18 +14,18 @@
 #   sensitive   = true
 # }
 
-output "lambda_function_name" {
-  description = "Name of the deployed AWS Lambda function"
-  value       = aws_lambda_function.hello_lambda.function_name
-}
+# output "lambda_function_name" {
+#   description = "Name of the deployed AWS Lambda function"
+#   value       = aws_lambda_function.hello_lambda.function_name
+# }
 
-output "lambda_function_arn" {
-  description = "ARN of the deployed AWS Lambda function"
-  value       = aws_lambda_function.hello_lambda.arn
-}
+# output "lambda_function_arn" {
+#   description = "ARN of the deployed AWS Lambda function"
+#   value       = aws_lambda_function.hello_lambda.arn
+# }
 
-output "lambda_iam_role_arn" {
-  description = "ARN of the execution IAM Role for AWS Lambda"
-  value       = aws_iam_role.lambda_exec_role.arn
-}
+# output "lambda_iam_role_arn" {
+#   description = "ARN of the execution IAM Role for AWS Lambda"
+#   value       = aws_iam_role.lambda_exec_role.arn
+# }
 
